@@ -24,7 +24,7 @@ locals {
 }
 
 resource "null_resource" "standalone_provisioning" {
-
+#
   count = var.base_configuration["additional_network"] != null ? var.quantity : 0
 
   connection {
