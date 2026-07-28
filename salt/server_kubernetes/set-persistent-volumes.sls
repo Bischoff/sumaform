@@ -1,3 +1,9 @@
+{% set osfullname = grains['osfullname'] %}
+{% set osrelease = grains['osrelease'] %}
+{% set is_sles_15_7 = osfullname == 'SLES' and osrelease == '15.7' %}
+{% set is_ubuntu = osfullname == 'Ubuntu' %}
+{% set is_tumbleweed = osfullname == 'openSUSE Tumbleweed' %}
+{% set is_supported_os = is_sles_15_7 or is_ubuntu or is_tumbleweed %}
 {% set kubeconfig = "/etc/rancher/rke2/rke2.yaml" %}
 {% set storage_backend = grains.get('kubernetes_storage_backend', 'local-path') %}
 {% set create_static_var_spacewalk_pv = grains.get('kubernetes_create_static_var_spacewalk_pv') %}
@@ -8,6 +14,8 @@
 {% if create_static_var_pgsql_pv is none %}
 {% set create_static_var_pgsql_pv = storage_backend == 'local-path' %}
 {% endif %}
+
+{% if is_supported_os %}
 
 create_uyuni_namespace:
   cmd.run:
@@ -48,4 +56,6 @@ apply_var_pgsql_file:
     - require:
       - cmd: create_uyuni_namespace
       - file: copy_var_pgsql_file
+{% endif %}
+
 {% endif %}
