@@ -215,7 +215,7 @@ variable "db_container_tag" {
 }
 
 variable "product_version" {
-  description = "One of: head, head-staging, uyuni-master, uyuni-main, uyuni-released, uyuni-pr"
+  description = "One of: head, head-staging, uyuni-master, uyuni-main, uyuni-released"
   type        = string
   default     = null
 }

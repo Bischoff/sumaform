@@ -72,7 +72,7 @@ cobbler_restart:
     - require:
       - cmd: cobbler_configuration
 
-{%- if grains.get('product_version') | default('', true) in ['uyuni-master', 'uyuni-main', 'uyuni-pr', 'uyuni-released'] %}
+{%- if grains.get('product_version') | default('', true) in ['uyuni-master', 'uyuni-main', 'uyuni-released'] %}
 uyuni_key_copy_host:
   file.managed:
     - name: /tmp/uyuni.key
@@ -111,7 +111,7 @@ suse_staging_key_import:
 
 {% endif %}
 
-{% set products_to_use_salt_bundle = ["uyuni-master", "uyuni-main", "uyuni-pr", "head", "head-staging", "5.1-nightly", "5.1-released", "5.2-nightly", "5.2-released"] %}
+{% set products_to_use_salt_bundle = ["uyuni-master", "uyuni-main", "head", "head-staging", "5.1-nightly", "5.1-released", "5.2-nightly", "5.2-released"] %}
 {% if grains.get('product_version') | default('', true) in products_to_use_salt_bundle %}
 
 # The following states are needed to ensure "venv-salt-minion" is used during bootstrapping,

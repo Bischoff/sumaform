@@ -2,7 +2,6 @@ variable "images" {
   default = {
     "4.3-released"    = "sles15sp4o"
     "4.3-nightly"     = "sles15sp4o"
-    "4.3-pr"          = "sles15sp4o"
     "4.3-build_image" = "sles15sp4o"
     "4.3-paygo"       = "suma-server-43-paygo"
     "4.3-VM-nightly"  = "suma43VM-ign"
@@ -11,7 +10,6 @@ variable "images" {
     "uyuni-master"    = "opensuse156o"
     "uyuni-main"      = "opensuse156o"
     "uyuni-released"  = "opensuse156o"
-    "uyuni-pr"        = "opensuse156o"
   }
 }
 

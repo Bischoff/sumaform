@@ -13,7 +13,6 @@ variable "images" {
     "uyuni-master"   = "tumbleweedo"
     "uyuni-main"     = "tumbleweedo"
     "uyuni-released" = "tumbleweedo"
-    "uyuni-pr"       = "tumbleweedo"
   }
 }
 

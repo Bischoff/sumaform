@@ -2,7 +2,6 @@ variable "testsuite-branch" {
   default = {
     "4.3-released"   = "Manager-4.3"
     "4.3-nightly"    = "Manager-4.3"
-    "4.3-pr"         = "Manager-4.3"
     "4.3-VM-released"= "Manager-4.3"
     "4.3-VM-nightly" = "Manager-4.3"
     "5.0-released"   = "Manager-5.0"
@@ -16,7 +15,6 @@ variable "testsuite-branch" {
     "uyuni-master"   = "master"
     "uyuni-main"     = "master"
     "uyuni-released" = "master"
-    "uyuni-pr"       = "master"
   }
 }
 
