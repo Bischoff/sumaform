@@ -11,7 +11,6 @@ variable "images" {
     "5.2-nightly"    = "slmicro62o"
     "5.2-released"   = "slmicro62o"
     "uyuni-master"   = "tumbleweedo"
-    "uyuni-main"     = "tumbleweedo"
     "uyuni-released" = "tumbleweedo"
   }
 }

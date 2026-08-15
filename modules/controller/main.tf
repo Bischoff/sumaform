@@ -13,7 +13,6 @@ variable "testsuite-branch" {
     "head"           = "master"
     "head-staging"   = "master"
     "uyuni-master"   = "master"
-    "uyuni-main"     = "master"
     "uyuni-released" = "master"
   }
 }
