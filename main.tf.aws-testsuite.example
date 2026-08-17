@@ -17,6 +17,9 @@ module "cucumber_testsuite" {
   product_version = "uyuni-master"
   branch          = "master"
 
+  container_server = true
+  container_proxy  = true
+
   cc_username     = ...
   cc_password     = ...
   cc_ptf_username = ...
@@ -43,8 +46,8 @@ module "cucumber_testsuite" {
 
   host_settings = {
     controller = {}
-    server = {}
-    proxy = {}
+    server_containerized = {}
+    proxy_containerized = {}
     suse_client = {
       image = "opensuse156o"
       name = "cli-opensuse156"
