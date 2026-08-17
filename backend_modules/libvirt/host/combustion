@@ -80,7 +80,7 @@ zypper ar http://${ use_mirror_images ? mirror : "dist.suse.de/ibs"}/SUSE/Produc
 
 # SL Micro 6.0 is being used in both Uyuni and Multi-Linux Manager
 # we do not support yet Leap Micro 6.0, even in Uyuni
-%{ if product_version == "uyuni-master" || product_version == "uyuni-released" || product_version == "uyuni-pr" }
+%{ if product_version == "uyuni-master" || product_version == "uyuni-released" }
 zypper ar http://${ use_mirror_images ? mirror : "download.opensuse.org"}/repositories/systemsmanagement:/Uyuni:/Master:/SLMicro6-Uyuni-Client-Tools/SL-Micro6/ client_tools_repo
 %{ else }
 zypper ar http://${ use_mirror_images ? mirror : "dist.suse.de/ibs"}/SUSE/Products/SUSE-Manager-Tools-For-SL-Micro/6/x86_64/product/ tools_pool_repo
@@ -92,14 +92,14 @@ zypper ar http://${ use_mirror_images ? mirror : "dist.suse.de/ibs"}/SUSE/Produc
 
 # SL Micro 6.1 is being used in both Uyuni and Multi-Linux Manager
 # we do not support yet Leap Micro 6.1, even in Uyuni
-  %{ if product_version == "uyuni-master" || product_version == "uyuni-released" || product_version == "uyuni-pr" }
+  %{ if product_version == "uyuni-master" || product_version == "uyuni-released" }
     zypper ar http://${ use_mirror_images ? mirror : "download.opensuse.org"}/repositories/systemsmanagement:/Uyuni:/Master:/SLMicro6-Uyuni-Client-Tools/SL-Micro6/ client_tools_repo
   %{ else }
     zypper ar http://${ use_mirror_images ? mirror : "dist.suse.de/ibs"}/SUSE/Products/SUSE-Manager-Tools-For-SL-Micro/6/x86_64/product/ tools_pool_repo
   %{ endif }
 
   %{ if container_server || container_proxy }
-    %{ if product_version == "uyuni-master" || product_version == "uyuni-pr" }
+    %{ if product_version == "uyuni-master" }
       zypper ar http://${ use_mirror_images ? mirror : "download.opensuse.org" }/repositories/systemsmanagement:/Uyuni:/Master:/ContainerUtils/openSUSE_Leap_16.0/ container_utils_repo
     %{ endif }
     %{ if product_version == "5.1-released" }
@@ -166,11 +166,7 @@ zypper ar http://${ use_mirror_images ? mirror : "dist.suse.de/ibs"}/SUSE/Produc
   for i in ${additional_repos}; do
     name=$(echo $i | cut -d= -f1)
     url=$(echo $i | cut -d= -f2)
-    %{ if product_version == "uyuni-pr" }
-      zypper ar --no-gpgcheck $url $name
-    %{ else }
-      zypper ar $url $name
-    %{ endif }
+    zypper ar $url $name
   done
 %{ endif }
 

@@ -8,7 +8,7 @@ variable "name" {
 }
 
 variable "product_version" {
-  description = "One of: 4.3-released, 4.3-nightly, 4.3-pr, 4.3-build_image, 4.3-VM-nightly, 4.3-VM-released"
+  description = "One of: 4.3-released, 4.3-nightly, 4.3-build_image, 4.3-VM-nightly, 4.3-VM-released"
   type        = string
   default     = null
 }
