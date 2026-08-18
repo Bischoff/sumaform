@@ -72,6 +72,7 @@ module "cucumber_testsuite" {
 
   # Required to select a container server in the testsuite
   container_server = true
+  container_proxy  = true
 
   # In case you use an authentication registry
   auth_registry = "registry.mgr.suse.de:5000/cucutest"
@@ -124,7 +125,7 @@ module "cucumber_testsuite" {
       # Define a specific container image tag to install
       # container_tag = "latest"
     }
-    proxy = {
+    proxy_containerized = {
       name = "proxy"
     }
     suse_client = {

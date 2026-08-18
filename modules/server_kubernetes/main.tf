@@ -6,7 +6,6 @@ variable "images" {
     "head-staging"   = "slmicro62o"
     "5.2-released"   = "slmicro62o"
     "uyuni-master"   = "tumbleweedo"
-    "uyuni-main"     = "tumbleweedo"
     "uyuni-released" = "tumbleweedo"
   }
 }

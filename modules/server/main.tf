@@ -6,10 +6,6 @@ variable "images" {
     "4.3-paygo"       = "suma-server-43-paygo"
     "4.3-VM-nightly"  = "suma43VM-ign"
     "4.3-VM-released" = "suma43VM-ign"
-    # Uyuni non-podman deprecated in September 2024:
-    "uyuni-master"    = "opensuse156o"
-    "uyuni-main"      = "opensuse156o"
-    "uyuni-released"  = "opensuse156o"
   }
 }
 

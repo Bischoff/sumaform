@@ -20,22 +20,6 @@ testing_overlay_devel_repo:
     - baseurl: http://{{ grains.get("mirror") | default("downloadcontent.opensuse.org", true) }}/repositories/systemsmanagement:/Uyuni:/Master/images/repo/Testing-Overlay-POOL-{{ grains.get("cpuarch") }}-Media1/
     - refresh: True
     - priority: 96
-
-{% endif %}
-
-{% if 'uyuni-main' in grains.get('product_version') %}
-server_devel_repo:
-  pkgrepo.managed:
-    - baseurl: http://{{ grains.get("mirror") | default("downloadcontent.opensuse.org", true) }}/repositories/systemsmanagement:/Uyuni:/Main/images/repo/Uyuni-Server-POOL-{{ grains.get("cpuarch") }}-Media1/
-    - refresh: True
-    - priority: 96
-
-testing_overlay_devel_repo:
-  pkgrepo.managed:
-    - baseurl: http://{{ grains.get("mirror") | default("downloadcontent.opensuse.org", true) }}/repositories/systemsmanagement:/Uyuni:/Main/images/repo/Testing-Overlay-POOL-{{ grains.get("cpuarch") }}-Media1/
-    - refresh: True
-    - priority: 96
-
 {% endif %}
 
 {% endif %}
