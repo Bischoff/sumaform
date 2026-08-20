@@ -4,13 +4,16 @@
 {% set is_slmicro_6_2 = osfullname == 'SL-Micro' and osrelease == '6.2' %}
 {% set is_ubuntu = osfullname == 'Ubuntu' %}
 {% set is_tumbleweed = osfullname == 'openSUSE Tumbleweed' %}
-{% set is_supported_os = is_sles_15_7 or is_slmicro_6_2 or is_ubuntu or is_tumbleweed %}
-{% if is_supported_os %}
+{% set is_supported_os = is_sles_15_7 or is_ubuntu or is_tumbleweed %}
 {% set kubeconfig = "/etc/rancher/rke2/rke2.yaml" %}
+{% set local_path_storage_file = "/root/local-path-storage.yaml" %}
+{% set local_path_namespace = "local-path-storage" %}
 {% set storage_class = grains.get('kubernetes_storage_class') | default('local-path', true) %}
 {% set local_path = grains.get('local_path_provisioner_path') | default('/opt/local-path-provisioner', true) %}
 {% set default_class = grains.get('local_path_provisioner_default_class', true) %}
 {% set pkg_map = {} %}
+
+{% if is_supported_os %}
 
 {% if osfullname in pkg_map %}
 install_dependencies_helm_provisioner:
@@ -21,14 +24,14 @@ install_dependencies_helm_provisioner:
 
 copy_local-path-storage_installation_file:
   file.managed:
-    - name: /root/local-path-storage.yaml
+    - name: {{ local_path_storage_file }}
     - source: salt://kubernetes_common/local-path-storage.yaml
     - template: jinja
     - makedirs: true
 
 install_local_path_provisioner:
   cmd.run:
-    - name: kubectl apply -f /root/local-path-storage.yaml
+    - name: kubectl apply -f {{ local_path_storage_file }}
     - env:
       - KUBECONFIG: {{ kubeconfig }}
     - require:
@@ -62,7 +65,7 @@ set_local-path-provisioner_selinux_tags:
 
 restart_local-path-provisioner_pods:
   cmd.run:
-    - name: kubectl delete pods --all -n local-path-storage
+    - name: kubectl delete pods --all -n {{ local_path_namespace }}
     - require:
       - cmd: set_local-path-provisioner_selinux_tags
       - file: create_local-path-provisioner_directory
@@ -71,4 +74,15 @@ restart_local-path-provisioner_pods:
 
 {% endif %}
 
+
 {% endif %}
+
+variables_local-path-provisioner:
+  file.managed:
+    - name: /etc/profile.d/local-path-provisioner_vars.sh
+    - contents: |
+        export LOCAL_PATH_PROVISIONER_PATH={{ local_path_storage_file }}
+        export LOCAL_PATH_PROVISIONER_STORAGE_CLASS={{ storage_class }}
+        export LOCAL_PATH={{ local_path }}
+        export LOCAL_PATH_NAMESPACE={{ local_path_namespace }}
+
