@@ -936,6 +936,11 @@ variable "install_kubectl_helm" {
   default = false
 }
 
+variable "install_uyuni_via_testsuite" {
+  description = "true to install mlm with the testsuite"
+  default = false
+}
+
 variable "kubeconfig_path" {
   description = "Path to a kubeconfig file on the host running Terraform; its contents will be copied to /root/.kube/config on the controller. Leave null to skip."
   default = null

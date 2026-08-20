@@ -1,7 +1,6 @@
 {% set osfullname = grains['osfullname'] %}
 {% set osrelease = grains['osrelease'] %}
 {% set is_sles_15_7 = osfullname == 'SLES' and osrelease == '15.7' %}
-{% set is_slmicro_6_2 = osfullname == 'SL-Micro' and osrelease == '6.2' %}
 {% set is_ubuntu = osfullname == 'Ubuntu' %}
 {% set is_tumbleweed = osfullname == 'openSUSE Tumbleweed' %}
 {% set is_supported_os = is_sles_15_7 or is_ubuntu or is_tumbleweed %}
@@ -12,8 +11,6 @@
 {% set local_path = grains.get('local_path_provisioner_path') | default('/opt/local-path-provisioner', true) %}
 {% set default_class = grains.get('local_path_provisioner_default_class', true) %}
 {% set pkg_map = {} %}
-
-{% if is_supported_os %}
 
 {% if osfullname in pkg_map %}
 install_dependencies_helm_provisioner:
@@ -28,6 +25,17 @@ copy_local-path-storage_installation_file:
     - source: salt://kubernetes_common/local-path-storage.yaml
     - template: jinja
     - makedirs: true
+
+variables_local-path-provisioner:
+  file.managed:
+    - name: /etc/profile.d/local-path-provisioner_vars.sh
+    - contents: |
+        export LOCAL_PATH_PROVISIONER_PATH={{ local_path_storage_file }}
+        export LOCAL_PATH_PROVISIONER_STORAGE_CLASS={{ storage_class }}
+        export LOCAL_PATH={{ local_path }}
+        export LOCAL_PATH_NAMESPACE={{ local_path_namespace }}
+
+{% if is_supported_os %}
 
 install_local_path_provisioner:
   cmd.run:
@@ -48,7 +56,7 @@ set_local-path-storage-file-as-default:
       - cmd: install_local_path_provisioner
 {% endif %}
 
-{% if is_tumbleweed or is_slmicro_6_2 %}
+{% if is_tumbleweed %}
 
 create_local-path-provisioner_directory:
   file.directory:
@@ -74,15 +82,4 @@ restart_local-path-provisioner_pods:
 
 {% endif %}
 
-
 {% endif %}
-
-variables_local-path-provisioner:
-  file.managed:
-    - name: /etc/profile.d/local-path-provisioner_vars.sh
-    - contents: |
-        export LOCAL_PATH_PROVISIONER_PATH={{ local_path_storage_file }}
-        export LOCAL_PATH_PROVISIONER_STORAGE_CLASS={{ storage_class }}
-        export LOCAL_PATH={{ local_path }}
-        export LOCAL_PATH_NAMESPACE={{ local_path_namespace }}
-

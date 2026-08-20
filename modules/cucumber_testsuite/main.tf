@@ -682,24 +682,25 @@ module "controller" {
   kvmhost_configuration          = contains(local.hosts, "kvm_host") ? module.kvm_host.configuration : { hostnames = [], ids = [], ipaddrs = [], macaddrs = [], private_macs = [] }
   monitoringserver_configuration = contains(local.hosts, "monitoring_server") ? module.monitoring_server.configuration : { hostnames = [], ids = [], ipaddrs = [], macaddrs = [], private_macs = [] }
 
-  branch                   = var.branch
-  git_username             = var.git_username
-  git_password             = var.git_password
-  cc_ptf_username          = var.cc_ptf_username
-  cc_ptf_password          = var.cc_ptf_password
-  git_repo                 = var.git_repo
-  git_profiles_repo        = var.git_profiles_repo
-  no_auth_registry         = var.no_auth_registry
-  auth_registry            = var.auth_registry
-  auth_registry_username   = var.auth_registry_username
-  auth_registry_password   = var.auth_registry_password
-  server_http_proxy        = var.server_http_proxy
-  custom_download_endpoint = var.custom_download_endpoint
-  swap_file_size           = null
-  beta_enabled             = var.beta_enabled
-  web_server_hostname      = var.web_server_hostname
-  install_kubectl_helm     = var.install_kubectl_helm
-  kubeconfig_path          = var.kubeconfig_path
+  branch                       = var.branch
+  git_username                 = var.git_username
+  git_password                 = var.git_password
+  cc_ptf_username              = var.cc_ptf_username
+  cc_ptf_password              = var.cc_ptf_password
+  git_repo                     = var.git_repo
+  git_profiles_repo            = var.git_profiles_repo
+  no_auth_registry             = var.no_auth_registry
+  auth_registry                = var.auth_registry
+  auth_registry_username       = var.auth_registry_username
+  auth_registry_password       = var.auth_registry_password
+  server_http_proxy            = var.server_http_proxy
+  custom_download_endpoint     = var.custom_download_endpoint
+  swap_file_size               = null
+  beta_enabled                 = var.beta_enabled
+  web_server_hostname          = var.web_server_hostname
+  install_kubectl_helm         = var.install_kubectl_helm
+  install_uyuni_via_testsuite  = var.install_uyuni_via_testsuite
+  kubeconfig_path              = var.kubeconfig_path
 
   prometheus_push_gateway_url = var.prometheus_push_gateway_url
 

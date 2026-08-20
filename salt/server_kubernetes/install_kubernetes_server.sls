@@ -264,5 +264,8 @@ variables_server_kubernetes:
         export PYTHON_HELM_CHART_PATH={{ python_helm_chart_path }}
         export HELM_CHART_DIRECTORY={{ helm_chart_directory }}
         export SELF_SIGNED_PATH={{ self_signed_path }}
+        export HELM_CHART_NAME={{ helm_chart_name }}
+        export HELM_CHART_URL={{ helm_chart_url }}
+        export DEVEL_FLAG={{ devel_flag }}
 
 {% endif %}
