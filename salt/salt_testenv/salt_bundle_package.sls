@@ -32,11 +32,14 @@
     {% elif grains['osrelease_info'][0] == 15 %}
         {% set repo_path = 'SLE_15' %}
     {% elif grains['osrelease_info'][0] == 16 %}
-        {% set repo_path = 'SLFO' %}
+        {% set repo_path = 'SLE_16' %}
     {% endif %}
 {% elif grains['osfullname'] == 'Leap' %}
     {% if grains['osrelease_info'][0] == 15 %}
         {% set repo_path = 'openSUSE_Leap_15' %}
+    {% elif grains['osrelease_info'][0] == 16 %}
+        {# Leap 16 shares codestream with SLE 16 #}
+        {% set repo_path = 'SLE_16' %}
     {% endif %}
 {% elif grains['osfullname'] == 'SL-Micro' %}
     {% if grains['osrelease'] == '6.0' %}
@@ -46,7 +49,8 @@
         {% set repo_path = 'SLMicro61' %}
     {% endif %}
     {% if grains['osrelease'] == '6.2' %}
-        {% set repo_path = 'SLFO' %}
+        {# SLM 6.2 shares codestream with SLE 16 #}
+        {% set repo_path = 'SLE_16' %}
     {% endif %}
 {% endif %}
 
