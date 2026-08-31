@@ -95,6 +95,7 @@ module "controller" {
     deploy_saline                                = var.deploy_saline
     deploy_hub_api                               = var.deploy_hub_api
     deploy_tftp                                  = var.deploy_tftp
+    install_uyuni_via_testsuite                  = var.install_uyuni_via_testsuite
 
     sles12sp5_paygo_minion    = length(var.sles12sp5_paygo_minion_configuration["hostnames"]) > 0 ? var.sles12sp5_paygo_minion_configuration["hostnames"][0] : null
     sles15sp5_paygo_minion    = length(var.sles15sp5_paygo_minion_configuration["hostnames"]) > 0 ? var.sles15sp5_paygo_minion_configuration["hostnames"][0] : null

@@ -936,6 +936,11 @@ variable "install_kubectl_helm" {
   default = false
 }
 
+variable "install_uyuni_via_testsuite" {
+  description = "true to install mlm with the testsuite. This only exports UYUNI_NOT_INSTALLED to the controller, it does not gate the salt states: install_helm.sls, install_traefik.sls, install_kubernetes_server.sls and set_up_local-path-provisioner.sls are still keyed on is_slmicro_6_2, so setting this to true on any other OS installs mlm twice"
+  default = false
+}
+
 variable "kubeconfig_path" {
   description = "Path to a kubeconfig file on the host running Terraform; its contents will be copied to /root/.kube/config on the controller. Leave null to skip."
   default = null
