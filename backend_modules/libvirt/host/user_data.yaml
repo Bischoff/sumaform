@@ -47,6 +47,7 @@ runcmd:
 %{ if image == "centos7o" ~}
 bootcmd:
   # HACK: mirrorlist.centos.org doesn't exist anymore
+  - sed -i 's,mirror.centos.org/centos/$releasever,archive.kernel.org/centos-vault/7.9.2009,g' /etc/yum.repos.d/*.repo
   - sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo
   - sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo
   - sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo
