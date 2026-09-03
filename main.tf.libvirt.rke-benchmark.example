@@ -1,0 +1,287 @@
+# This example uses libvirt to create a testsuite controller and dedicated
+# minions for the Salt package download benchmark. It reuses an existing RKE2
+# cluster and Uyuni installation.
+#
+# Before the first apply, set all variables marked as required. In particular:
+#
+#   - kubeconfig_path must point to a self-contained kubeconfig whose API address
+#     is reachable from the controller. Sumaform copies it to
+#     /root/.kube/config so the benchmark can run kubectl commands.
+#   - uyuni_hostname must serve the Uyuni API and be an SSH-accessible RKE2 host.
+#     The current testsuite initializes its server target over root SSH, so that
+#     host must accept salt/controller/id_ed25519.pub from the controller.
+#   - the existing Uyuni test installation must use the admin/admin login.
+#   - benchmark_channel must be synchronized, contain binary RPMs, and be
+#     assigned by activation_key.
+#   - salt_master_hostname must be reachable from the minions on TCP 4505/4506.
+#
+# Set the values in terraform.tfvars or pass them with -var. They must be present
+# on the first apply because Sumaform provisions the VMs only when it creates them.
+# To exercise an unmerged Uyuni change, also set uyuni_git_repo and
+# uyuni_git_branch to the repository and branch that contain it.
+#
+#   cp main.tf.libvirt.rke-benchmark.example main.tf
+#   ln -sfn ../backend_modules/libvirt modules/backend
+#   tofu init
+#   tofu apply
+#
+# OpenTofu creates the controller and minions, but it does not run the benchmark.
+# If Salt auto-accept is disabled, use `tofu output -json benchmark_minion_ids`
+# to identify and accept only these minions. Confirm that each one is registered,
+# Salt-reachable, and subscribed to benchmark_channel, then run:
+#
+#   tofu output -raw benchmark_command \
+#     | ssh root@"$(tofu output -raw controller_ssh_host)" bash -s
+
+terraform {
+  required_version = ">= 1.6.0"
+
+  required_providers {
+    libvirt = {
+      source  = "dmacvicar/libvirt"
+      version = "0.8.3"
+    }
+  }
+}
+
+provider "libvirt" {
+  uri = "qemu:///system"
+}
+
+variable "kubeconfig_path" {
+  description = "Required path to a self-contained kubeconfig for the external RKE2 cluster"
+  type        = string
+  default     = null
+}
+
+variable "uyuni_hostname" {
+  description = "Required Uyuni API and SSH hostname, without a URL scheme"
+  type        = string
+  default     = null
+}
+
+variable "salt_master_hostname" {
+  description = "Required Salt endpoint reachable from the benchmark minions"
+  type        = string
+  default     = null
+}
+
+variable "benchmark_channel" {
+  description = "Required label of the existing synchronized Uyuni software channel"
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.benchmark_channel == null || can(regex("^[A-Za-z0-9][A-Za-z0-9_.-]*$", var.benchmark_channel))
+    error_message = "benchmark_channel contains unsupported characters."
+  }
+}
+
+variable "activation_key" {
+  description = "Required existing Uyuni activation key that assigns benchmark_channel"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "benchmark_minion_quantity" {
+  description = "Number of dedicated benchmark minions"
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = var.benchmark_minion_quantity > 0 && floor(var.benchmark_minion_quantity) == var.benchmark_minion_quantity
+    error_message = "benchmark_minion_quantity must be a positive integer."
+  }
+}
+
+variable "benchmark_timeout_seconds" {
+  description = "Maximum duration of the package download workload"
+  type        = number
+  default     = 14400
+
+  validation {
+    condition     = var.benchmark_timeout_seconds >= 1 && var.benchmark_timeout_seconds <= 86400
+    error_message = "benchmark_timeout_seconds must be between 1 and 86400."
+  }
+}
+
+variable "benchmark_storage_class" {
+  description = "Optional StorageClass label recorded in result.json; it does not select or change storage"
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.benchmark_storage_class == null || can(regex("^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$", var.benchmark_storage_class))
+    error_message = "benchmark_storage_class must be a valid Kubernetes resource name."
+  }
+}
+
+variable "uyuni_git_repo" {
+  description = "Git repository cloned on the testsuite controller"
+  type        = string
+  default     = "https://github.com/uyuni-project/uyuni.git"
+}
+
+variable "uyuni_git_branch" {
+  description = "Git branch cloned on the testsuite controller"
+  type        = string
+  default     = "master"
+}
+
+variable "name_prefix" {
+  description = "Prefix for the controller and benchmark minion VM names"
+  type        = string
+  default     = "rke-benchmark-"
+}
+
+variable "ssh_public_key_path" {
+  description = "Public SSH key installed on the VMs"
+  type        = string
+  default     = "~/.ssh/id_ed25519.pub"
+}
+
+variable "controller_ssh_host_override" {
+  description = "Optional controller address when its generated hostname is not resolvable"
+  type        = string
+  default     = null
+}
+
+variable "use_shared_resources" {
+  description = "Reuse existing unprefixed opensuse160o and opensuse156o base images; enable only when they already exist"
+  type        = bool
+  default     = false
+}
+
+locals {
+  benchmark_minions_json        = jsonencode(module.benchmark_minions.configuration.hostnames)
+  benchmark_storage_class_setup = var.benchmark_storage_class == null ? "unset UYUNI_BENCH_STORAGE_CLASS" : "export UYUNI_BENCH_STORAGE_CLASS='${var.benchmark_storage_class}'"
+}
+
+module "cucumber_testsuite" {
+  source = "./modules/cucumber_testsuite"
+
+  product_version = "uyuni-master"
+  kubernetes      = true
+
+  # Reuse the existing cluster and Uyuni installation. No Kubernetes server or
+  # proxy VM is created by this module in external mode.
+  kubernetes_cluster_mode = "external"
+  kubeconfig_path         = var.kubeconfig_path == null ? null : pathexpand(var.kubeconfig_path)
+
+  kubernetes_external_server_configuration = {
+    id                 = null
+    hostname           = var.uyuni_hostname
+    username           = "admin"
+    password           = "admin"
+    runtime            = "rke2"
+    product_version    = "uyuni-master"
+    first_user_present = true
+  }
+
+  kubernetes_external_proxy_configuration = {
+    id           = null
+    hostname     = null
+    private_mac  = null
+    private_ip   = 254
+    private_name = "proxy"
+    username     = "admin"
+    password     = "admin"
+  }
+
+  # Keep the existing Uyuni installation and install only the controller-side
+  # kubectl and Helm clients needed by the external-cluster testsuite.
+  install_mlm_server   = false
+  install_kubectl_helm = true
+
+  images               = ["opensuse160o", "opensuse156o"]
+  use_shared_resources = var.use_shared_resources
+  use_avahi            = true
+  name_prefix          = var.name_prefix
+  domain               = "tf.local"
+  ssh_key_path         = pathexpand(var.ssh_public_key_path)
+
+  git_repo     = var.uyuni_git_repo
+  git_username = "nogit"
+  git_password = "nogit"
+  branch       = var.uyuni_git_branch
+
+  host_settings = {
+    controller = {
+      name = "controller"
+      provider_settings = {
+        use_dhcp_ip = true
+      }
+    }
+  }
+}
+
+module "benchmark_minions" {
+  source = "./modules/minion"
+
+  depends_on = [module.cucumber_testsuite]
+
+  base_configuration = module.cucumber_testsuite.configuration.base
+  server_configuration = {
+    hostname = var.salt_master_hostname
+  }
+
+  quantity                = var.benchmark_minion_quantity
+  name                    = "benchmark-minion"
+  image                   = "opensuse156o"
+  auto_connect_to_master  = true
+  activation_key          = var.activation_key
+  install_salt_bundle     = true
+  use_os_released_updates = false
+
+  # Install the controller's public key so that tests can reach the minions.
+  ssh_key_path = "./salt/controller/id_ed25519.pub"
+
+  provider_settings = {
+    use_dhcp_ip = true
+  }
+}
+
+output "configuration" {
+  value = module.cucumber_testsuite.configuration
+}
+
+output "controller_ssh_host" {
+  description = "Testsuite controller on which the benchmark command is run"
+  value = coalesce(
+    var.controller_ssh_host_override,
+    module.cucumber_testsuite.configuration.controller.hostname
+  )
+}
+
+output "benchmark_minion_ids" {
+  description = "Salt IDs of the benchmark minions"
+  value       = module.benchmark_minions.configuration.hostnames
+}
+
+output "benchmark_command" {
+  description = "Run this script on controller_ssh_host after the minions are registered"
+  value       = <<-EOT
+    source /root/.bashrc
+    set -euo pipefail
+    cd /root/spacewalk/testsuite
+
+    export API_PROTOCOL='http'
+    export DEFAULT_TIMEOUT='${var.benchmark_timeout_seconds}'
+    export UYUNI_BENCH_MINIONS='${local.benchmark_minions_json}'
+    export UYUNI_BENCH_CHANNEL='${var.benchmark_channel == null ? "" : var.benchmark_channel}'
+    export UYUNI_BENCH_TIMEOUT_SECONDS='${var.benchmark_timeout_seconds}'
+    ${local.benchmark_storage_class_setup}
+
+    # Ignore selectors inherited from an earlier testsuite invocation so that
+    # only the dedicated benchmark run set is executed.
+    unset PROFILE TAGS CUCUMBER_OPTS FEATURE
+
+    bundle exec rake cucumber:kubernetes_package_download_benchmark
+  EOT
+}
+
+output "benchmark_result_directory" {
+  description = "Directory containing timestamped package download results on the controller"
+  value       = "/root/spacewalk/testsuite/results/package-download"
+}
